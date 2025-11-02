@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../exhibition/exhibition_main.dart';
 
 class Intro extends StatefulWidget {
   const Intro({super.key});
@@ -8,6 +11,15 @@ class Intro extends StatefulWidget {
 }
 
 class _IntroState extends State<Intro> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      Get.to(() => const ExhibitionMain());
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,5 +64,6 @@ class _IntroState extends State<Intro> {
     );
   }
 }
+
 
 // TODO: 애니메이션 효과

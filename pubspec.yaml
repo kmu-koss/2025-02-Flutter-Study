@@ -68,7 +68,7 @@ flutter:
     - assets/images/exhibition_werner.png
     - assets/images/exhibition_yosigo.png
 
-    - assets/data/exhibition.json
+    - assets/data/exhibitions.json
 
   fonts:
      - family: Pretendard-Bold

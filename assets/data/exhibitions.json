@@ -10,7 +10,7 @@
   {
     "exhibition": {
       "name": "이경준 사진전: 원 스텝 어웨이",
-      "logoImagePath": "assets/images/exhibition_onestepaway.png",
+      "imagePath": "assets/images/exhibition_onestepaway.png",
       "visitedDate": "2025/5/4",
       "recordedWork": "6개"
     }
@@ -18,7 +18,7 @@
   {
     "exhibition": {
       "name": "유토피아: 노웨어 나우 히어",
-      "logoImagePath": "assets/images/exhibition_utopia.png",
+      "imagePath": "assets/images/exhibition_utopia.png",
       "visitedDate": "2020/7/9",
       "recordedWork": "5개"
     }
@@ -26,7 +26,7 @@
   {
     "exhibition": {
       "name": "모네인사이드",
-      "logoImagePath": "assets/images/exhibition_monetinside.png",
+      "imagePath": "assets/images/exhibition_monetinside.png",
       "visitedDate": "2018/9/4",
       "recordedWork": "2개"
     }
@@ -34,7 +34,7 @@
   {
     "exhibition": {
       "name": "워너 브롱크호스트",
-      "logoImagePath": "assets/images/exhibition_werner.png",
+      "imagePath": "assets/images/exhibition_werner.png",
       "visitedDate": "2000/4/4",
       "recordedWork": "7개"
     }
@@ -42,7 +42,7 @@
   {
     "exhibition": {
       "name": "인투 앨리스 더 뉴 월드",
-      "logoImagePath": "assets/images/exhibition_alice.png",
+      "imagePath": "assets/images/exhibition_alice.png",
       "visitedDate": "2023/10/19",
       "recordedWork": "3개"
     }

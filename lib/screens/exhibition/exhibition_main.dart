@@ -27,7 +27,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
     setState(() {
       if (_shownIndex.contains(index)) {
         _shownIndex.remove(index);
-        Get.to(() => ExhibitionDetail(index: index));
+        Get.off(() => ExhibitionDetail(index: index));
       } else {
         setState(() {
           _shownIndex.add(index);
@@ -82,8 +82,35 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
                   children: [
                     Image.asset(exhb.imagePath, width: 150, height: 200, fit: BoxFit.cover),
                     if (showText)
-                      Container(
-                        child: Text(exhb.name),
+                      Container(width: 150, height: 200, color: Color(0xCC0D9F34)),
+                    if (showText)
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            exhb.name,
+                            style: TextStyle(
+                              fontFamily: 'Pretendard-Medium',
+                              fontSize: 15,
+                            ),
+                          ),
+                          SizedBox(height: 120),
+                          Text(
+                            '방문 날짜    ${exhb.visitedDate}',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard-Light',
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            '작품 기록               ${exhb.recordedWork}',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard-Light',
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),

@@ -51,7 +51,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
         actions: [
           IconButton(
             onPressed: () {
-              Get.to(() => LikeMain());
+              Get.off(() => LikeMain());
             },
             icon: Icon(Icons.favorite), color: Color(0xff0D9F34)
           ),

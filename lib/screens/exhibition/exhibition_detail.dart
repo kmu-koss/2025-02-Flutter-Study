@@ -12,10 +12,12 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          Text('작품 상세 페이지')
-        ],
+      body: Center(
+        child: Column(
+          children: [
+            Text('좋아요 메인 페이지')
+          ],
+        ),
       ),
     );
   }

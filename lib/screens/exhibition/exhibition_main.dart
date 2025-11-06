@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../data/exhibition_loader.dart';
 import '../../models/exhibition.dart';
 import 'exhibition_detail.dart';
+import '../../screens/like/like_main.dart';
 
 class ExhibitionMain extends StatefulWidget {
   const ExhibitionMain({super.key});
@@ -49,7 +50,9 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
         ),
         actions: [
           IconButton(
-            onPressed: () {}, // TODO: 좋아요 페이지 연결
+            onPressed: () {
+              Get.to(() => LikeMain());
+            },
             icon: Icon(Icons.favorite), color: Color(0xff0D9F34)
           ),
         ],

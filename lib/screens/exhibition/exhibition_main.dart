@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 
 import '../../data/exhibition_loader.dart';
 import '../../models/exhibition.dart';
-import 'exhibition_detail.dart';
 import '../../screens/like/like_main.dart';
+import '../create/create_1.dart';
+import 'exhibition_detail.dart';
 
 class ExhibitionMain extends StatefulWidget {
   const ExhibitionMain({super.key});
@@ -118,6 +119,17 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
             },
           );
         },
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 30),
+        child: FloatingActionButton(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+          backgroundColor: Color(0xff0D9F34),
+          child: Icon(Icons.add, color: Colors.white),
+          onPressed: () {
+            Get.off(() => Create1());
+          }
+        ),
       ),
     );
   }

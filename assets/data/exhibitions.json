@@ -1,48 +1,54 @@
 [
   {
     "exhibition": {
-      "name": "요시고 사진전",
+      "id": 1,
       "imagePath": "assets/images/exhibition_yosigo.png",
-      "visitedDate": "2025/2/2",
+      "name": "요시고 사진전",
+      "visitedDate": "2025/02/02",
       "recordedWork": "2개"
     }
   },
   {
     "exhibition": {
-      "name": "이경준 사진전: 원 스텝 어웨이",
+      "id": 2,
       "imagePath": "assets/images/exhibition_onestepaway.png",
-      "visitedDate": "2025/5/4",
+      "name": "이경준 사진전: 원 스텝 어웨이",
+      "visitedDate": "2025/05/04",
       "recordedWork": "6개"
     }
   },
   {
     "exhibition": {
-      "name": "유토피아: 노웨어 나우 히어",
+      "id": 3,
       "imagePath": "assets/images/exhibition_utopia.png",
-      "visitedDate": "2020/7/9",
+      "name": "유토피아: 노웨어 나우 히어",
+      "visitedDate": "2020/07/09",
       "recordedWork": "5개"
     }
   },
   {
     "exhibition": {
-      "name": "모네인사이드",
+      "id": 4,
       "imagePath": "assets/images/exhibition_monetinside.png",
-      "visitedDate": "2018/9/4",
+      "name": "모네인사이드",
+      "visitedDate": "2018/09/04",
       "recordedWork": "2개"
     }
   },
   {
     "exhibition": {
-      "name": "워너 브롱크호스트",
+      "id": 5,
       "imagePath": "assets/images/exhibition_werner.png",
-      "visitedDate": "2000/4/4",
+      "name": "워너 브롱크호스트",
+      "visitedDate": "2000/04/14",
       "recordedWork": "7개"
     }
   },
   {
     "exhibition": {
-      "name": "인투 앨리스 더 뉴 월드",
+      "id": 6,
       "imagePath": "assets/images/exhibition_alice.png",
+      "name": "인투 앨리스 더 뉴 월드",
       "visitedDate": "2023/10/19",
       "recordedWork": "3개"
     }

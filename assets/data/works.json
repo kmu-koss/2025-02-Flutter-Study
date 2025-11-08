@@ -1,0 +1,29 @@
+[
+  {
+    "exhibitionId": 2,
+    "works": [
+      {
+        "imagePath": "assets/images/work_onestepaway_1.png",
+        "title": "이동언바보",
+        "author": "박성연",
+        "date": "2002/07/09",
+        "review": "이동언은 유명한 바보이다 를 나타내는 작품, 좋았어용"
+      },
+      {
+        "imagePath": "assets/images/work_onestepaway_2.png",
+        "title": "나는나는공주인가봐",
+        "author": "이동언",
+        "date": "2019/05/04",
+        "review": "자신이 얼마나 공주인지를 담은 작품, 저는 인정하기로 했습니다"
+      },
+      {
+        "imagePath": "assets/images/work_onestepaway_3.png",
+        "title": "비둘기야어딜가니",
+        "author": "강둘기",
+        "date": "1956/10/02",
+        "review": "비둘기.. 가끔 귀여운 비둘기도 있다. 우크라이나 비둘기가 예쁘다고 한다."
+
+      }
+    ]
+  }
+]

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../models/work.dart';
+import '../../data/work_loader.dart';
+
 class ExhibitionDetail extends StatefulWidget {
   final int index;
   const ExhibitionDetail({super.key, required this.index});
@@ -16,7 +19,7 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
       body: Center(
         child: Column(
           children: [
-            Text('전시회 디테일 페이지') // TODO: 전시작품 데이터 추가해서 연결
+            Text('전시회 디테일 페이지')
           ],
         ),
       ),

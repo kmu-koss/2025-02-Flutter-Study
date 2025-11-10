@@ -24,11 +24,11 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
     exhibitionsFuture = loadExhibitions();
   }
 
-  void _handleExhb(int index) {
+  void _handleExhb(int index, Exhibition exhb) {
     setState(() {
       if (_shownIndex.contains(index)) {
         _shownIndex.remove(index);
-        Get.off(() => ExhibitionDetail(index: index));
+        Get.to(() => ExhibitionDetail(index: index, exhibitionName: exhb.name));
       } else {
         setState(() {
           _shownIndex.add(index);
@@ -42,7 +42,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           '내가 감상한 전시회에요!',
           style: TextStyle(
             fontFamily: 'Pretendard-SemiBold',
@@ -52,9 +52,9 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
         actions: [
           IconButton(
             onPressed: () {
-              Get.off(() => LikeMain());
+              Get.off(() => const LikeMain());
             },
-            icon: Icon(Icons.favorite), color: Color(0xff0D9F34)
+            icon: const Icon(Icons.favorite), color: const Color(0xff0D9F34)
           ),
         ],
       ),
@@ -77,13 +77,13 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
               final showText = _shownIndex.contains(index);
 
               return GestureDetector(
-                onTap: () => _handleExhb(index),
+                onTap: () => _handleExhb(index, exhb),
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
                     Image.asset(exhb.imagePath, width: 150, height: 200, fit: BoxFit.cover),
                     if (showText)
-                      Container(width: 150, height: 200, color: Color(0xCC0D9F34)),
+                      Container(width: 150, height: 200, color: const Color(0xCC0D9F34)),
                     if (showText)
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -91,22 +91,22 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
                         children: [
                           Text(
                             exhb.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Pretendard-Medium',
                               fontSize: 15,
                             ),
                           ),
-                          SizedBox(height: 120),
+                          const SizedBox(height: 120),
                           Text(
                             '방문 날짜    ${exhb.visitedDate}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Pretendard-Light',
                               fontSize: 12,
                             ),
                           ),
                           Text(
                             '작품 기록               ${exhb.recordedWork}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'Pretendard-Light',
                               fontSize: 12,
                             ),
@@ -124,10 +124,10 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
         padding: const EdgeInsets.only(bottom: 30),
         child: FloatingActionButton(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
-          backgroundColor: Color(0xff0D9F34),
-          child: Icon(Icons.add, color: Colors.white),
+          backgroundColor: const Color(0xff0D9F34),
+          child: const Icon(Icons.add, color: Colors.white),
           onPressed: () {
-            Get.off(() => Create1());
+            Get.off(() => const Create1());
           }
         ),
       ),

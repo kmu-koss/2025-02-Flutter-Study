@@ -14,12 +14,14 @@ class ExhibitionDetail extends StatefulWidget {
 
 class _ExhibitionDetailState extends State<ExhibitionDetail> {
   late Future<List<Work>> worksFuture;
-  final PageController _pageController = PageController();
+  late PageController _pageController = PageController();
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
     worksFuture = loadWorksByExhibitionId(widget.index + 1);
+    _pageController = PageController(viewportFraction: 0.5);
   }
 
   @override
@@ -28,66 +30,112 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
       appBar: AppBar(
         title: Text("${widget.exhibitionName}")
       ),
-
       body: FutureBuilder<List<Work>>(
         future: worksFuture,
         builder: (context, snapshot) {
           if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
             return const Center(child: Text('아직 기록한 작품이 없어요!'));
           }
-
           final works = snapshot.data!;
-          return PageView.builder(
-            controller: _pageController,
-            itemCount: works.length,
-            itemBuilder: (context, i) {
-              final work = works[i];
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Column(
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            if (i > 0)
-                              Positioned(
-                                left: 0,
-                                child: IconButton(
-                                  onPressed: () {
-                                    _pageController.previousPage(
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut
-                                    );
-                                  },
-                                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                                ),
-                              ),
-                            ClipRRect(child: Image.asset(work.imagePath)),
-                            if (i < works.length - 1)
-                              Positioned(
-                                right: 0,
-                                child: IconButton(
-                                  onPressed: () {
-                                    _pageController.nextPage(
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut
-                                    );
-                                  },
-                                  icon: const Icon(
-                                    Icons.arrow_forward_ios, color: Colors.white
+
+          return Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        height: 250,
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: works.length,
+                          onPageChanged: (index) {
+                            setState(() => _currentPage = index);
+                          },
+                          itemBuilder: (context, i) {
+                            final work = works[i];
+                            final active = i == _currentPage;
+                            final scale = active ? 1.0 : 0.8;
+                            final opacity = active ? 1.0 : 0.5;
+
+                            return AnimatedContainer(
+                              height: 220,
+                              width: 150,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeOut,
+                              child: Transform.scale(
+                                scale: scale,
+                                child: Opacity(
+                                  opacity: opacity,
+                                  child: ClipRRect(
+                                    child: Image.asset(
+                                        work.imagePath, fit: BoxFit.cover),
                                   ),
                                 ),
                               ),
-                          ],
+                            );
+                          },
                         ),
-                        Text("작품명"),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      if (_currentPage > 0)
+                        Positioned(
+                          left: 20,
+                          child: IconButton(
+                            onPressed: () {
+                              if (_currentPage > 0) {
+                                _pageController.previousPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut
+                                );
+                              }
+                            },
+                            icon: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xff0D9F34),
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: const Icon(Icons.arrow_back_ios, color: Colors.white)
+                            ),
+                          ),
+                        ),
+                      if (_currentPage < works.length - 1)
+                        Positioned(
+                          right: 20,
+                          child: IconButton(
+                            onPressed: () {
+                              if (_currentPage < works.length - 1) {
+                                _pageController.nextPage(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut
+                                );
+                              }
+                            },
+                            icon: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xff0D9F34),
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: const Icon(Icons.arrow_forward_ios, color: Colors.white)
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              );
-            }
+              ),
+              const Text("작품명"),
+              Text(works[_currentPage].title),
+              Text(works[_currentPage].author),
+              Text(works[_currentPage].date),
+              Text(works[_currentPage].review),
+              SizedBox(height: 200)
+            ],
           );
         },
       ),

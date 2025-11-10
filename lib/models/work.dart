@@ -16,8 +16,8 @@ class Work {
   factory Work.fromJson(Map<String, dynamic> json) {
     return Work(
       imagePath: json['imagePath'] ?? 'assets/images/polygon.png',
-      title: json['name'] ?? '제목 없음',
-      author: json['visitedDate'] ?? '작가 없음',
+      title: json['title'] ?? '제목 없음',
+      author: json['author'] ?? '작가 없음',
       date: json['date'] ?? '날짜 없음',
       review: json['review'] ?? '...',
     );

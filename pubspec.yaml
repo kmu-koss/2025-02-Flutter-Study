@@ -70,6 +70,8 @@ flutter:
     - assets/images/work_onestepaway_1.png
     - assets/images/work_onestepaway_2.png
     - assets/images/work_onestepaway_3.png
+    - assets/images/work_onestepaway_4.jpg
+    - assets/images/work_onestepaway_5.jpg
 
     - assets/data/exhibitions.json
     - assets/data/works.json

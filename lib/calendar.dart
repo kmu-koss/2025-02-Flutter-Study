@@ -32,7 +32,7 @@ class CalendarPage extends StatelessWidget {
       backgroundColor: Color(0xffFDF7EF),
       body: const Center(
         child: Text(
-          '달력 페이지',
+          '달력',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),

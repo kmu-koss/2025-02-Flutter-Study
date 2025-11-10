@@ -66,6 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(
                       color: Color(0xff2E2E2E),
                     ),
+
                   ),
                 ],
               )

@@ -32,7 +32,7 @@ class SchedulePage extends StatelessWidget {
       backgroundColor: Color(0xffFDF7EF),
       body: const Center(
         child: Text(
-          '시간표 페이지',
+          '시간표',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),

@@ -66,16 +66,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     style: TextStyle(
                       color: Color(0xff2E2E2E),
                     ),
+
                   ),
                 ],
               )
           ),
-          Container(
-            color: Color(0xffFDF7EF),
-            width: double.infinity,
-            padding: EdgeInsets.all(20),
-            height: 100,
-          ),
+          const SizedBox(height: 50,),
           Container(
               width: double.infinity,
               padding: EdgeInsets.all(20),

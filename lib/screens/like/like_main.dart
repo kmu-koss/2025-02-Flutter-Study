@@ -16,11 +16,11 @@ class _LikeMainState extends State<LikeMain> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
+        title: const Text(
           '내가 좋아하는 작품이에요!',
           style: TextStyle(
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 20
+              fontFamily: 'Pretendard-SemiBold',
+              fontSize: 24
           ),
         ),
         actions: [

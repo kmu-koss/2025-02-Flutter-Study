@@ -28,7 +28,13 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("${widget.exhibitionName}")
+        title: Text(
+          widget.exhibitionName,
+          style: const TextStyle(
+              fontFamily: 'Pretendard-Regular',
+              fontSize: 18
+          ),
+        ),
       ),
       body: FutureBuilder<List<Work>>(
         future: worksFuture,
@@ -92,8 +98,8 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                               }
                             },
                             icon: Container(
-                                width: 50,
-                                height: 50,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   color: const Color(0xff0D9F34),
                                   borderRadius: BorderRadius.circular(100),
@@ -115,8 +121,8 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                               }
                             },
                             icon: Container(
-                                width: 50,
-                                height: 50,
+                                width: 40,
+                                height: 40,
                                 decoration: BoxDecoration(
                                   color: const Color(0xff0D9F34),
                                   borderRadius: BorderRadius.circular(100),
@@ -129,12 +135,82 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                   ),
                 ),
               ),
-              const Text("작품명"),
-              Text(works[_currentPage].title),
-              Text(works[_currentPage].author),
-              Text(works[_currentPage].date),
-              Text(works[_currentPage].review),
-              SizedBox(height: 200)
+
+              const Text(
+                "작품명",
+                style: TextStyle(
+                    fontFamily: 'Pretendard-Light',
+                    fontSize: 18
+                )
+              ),
+              Text(
+                works[_currentPage].title,
+                style: const TextStyle(
+                    fontFamily: 'Pretendard-Medium',
+                    fontSize: 24
+                ),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Column(
+                    children: [
+                      const Text(
+                          "작가",
+                          style: TextStyle(
+                              fontFamily: 'Pretendard-Light',
+                              fontSize: 18
+                          )
+                      ),
+                      Text(
+                        works[_currentPage].author,
+                        style: const TextStyle(
+                            fontFamily: 'Pretendard-Regular',
+                            fontSize: 24
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 50),
+                  Column(
+                    children: [
+                      const Text(
+                        "제작 시기",
+                        style: TextStyle(
+                            fontFamily: 'Pretendard-Light',
+                            fontSize: 18
+                        ),
+                      ),
+                      Text(
+                        works[_currentPage].date,
+                        style: const TextStyle(
+                            fontFamily: 'Pretendard-Regular',
+                            fontSize: 24
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 50),
+              const Text(
+                  "감상평",
+                  style: TextStyle(
+                      fontFamily: 'Pretendard-Light',
+                      fontSize: 18
+                  )
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
+                child: Text(
+                  works[_currentPage].review,
+                  style: const TextStyle(
+                      fontFamily: 'Pretendard-Regular',
+                      fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 200)
             ],
           );
         },

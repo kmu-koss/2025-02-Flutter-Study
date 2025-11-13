@@ -46,7 +46,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
           '내가 감상한 전시회에요!',
           style: TextStyle(
             fontFamily: 'Pretendard-SemiBold',
-            fontSize: 20,
+            fontSize: 24,
           ),
         ),
         actions: [

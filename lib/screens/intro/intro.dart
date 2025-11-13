@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+
 import '../exhibition/exhibition_main.dart';
 
 class Intro extends StatefulWidget {
@@ -28,7 +29,7 @@ class _IntroState extends State<Intro> {
           alignment: Alignment.center,
           children: [
             Image.asset('assets/images/polygon.png'),
-            Column(
+            const Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(height: 50),

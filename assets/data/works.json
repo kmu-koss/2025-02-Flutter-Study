@@ -1,41 +1,66 @@
 [
   {
+    "exhibitionId": 1,
+    "works": [
+      {
+        "exhibitionName": "요시고 사진전",
+        "imagePath": "assets/images/work_yosigo_1.jpg",
+        "title": "이동언이사온케이쿠",
+        "author": "박성연",
+        "date": "2025/11/13",
+        "review": "아니내가빅토리아케이크진짜좋아하는데이사람이무화과케이크를사온거임근데진짜맛잇엇고, 나사실치즈케이크?당연히 좋아함 근데? 막 그렇게 좋아하는 편은 아님(물론 케이크치고) 근데? 혁명적인밤바스크치즈케이크가 나온거임근데 이거ㄹㅇ 예상외의 맛도리라서 놀람ㄷㄷ",
+        "like": 1
+      }
+    ]
+  },
+
+  {
     "exhibitionId": 2,
     "works": [
       {
+        "exhibitionName": "이경준 사진전: 원 스텝 어웨이",
         "imagePath": "assets/images/work_onestepaway_1.png",
         "title": "이동언바보",
         "author": "박성연",
         "date": "2002/07/09",
-        "review": "이동언은 유명한 바보이다 를 나타내는 작품, 좋았어용"
+        "review": "이동언은 유명한 바보이다 를 나타내는 작품, 좋았어용",
+        "like": 1
       },
       {
+        "exhibitionName": "이경준 사진전: 원 스텝 어웨이",
         "imagePath": "assets/images/work_onestepaway_2.png",
         "title": "나는나는공주인가봐",
         "author": "이동언",
         "date": "2019/05/04",
-        "review": "자신이 얼마나 공주인지를 담은 작품, 저는 인정하기로 했습니다"
+        "review": "자신이 얼마나 공주인지를 담은 작품, 저는 인정하기로 했습니다",
+        "like": 1
       },
       {
+        "exhibitionName": "이경준 사진전: 원 스텝 어웨이",
         "imagePath": "assets/images/work_onestepaway_3.png",
         "title": "비둘기야어딜가니",
         "author": "강둘기",
         "date": "1956/10/02",
-        "review": "비둘기.. 가끔 귀여운 비둘기도 있다. 우크라이나 비둘기가 예쁘다고 한다."
+        "review": "비둘기.. 가끔 귀여운 비둘기도 있다. 우크라이나 비둘기가 예쁘다고 한다.",
+        "like": 0
       },
       {
+        "exhibitionName": "이경준 사진전: 원 스텝 어웨이",
         "imagePath": "assets/images/work_onestepaway_4.jpg",
         "title": "샤오롱바오",
         "author": "박성연",
         "date": "2024/11/10",
-        "review": "이거 건대 어디였더라 여튼 인기 진짜 많은 곳인데 여기 진짜 맛남 꿔바로우가 차원이 다름"
+        "review": "이거 건대 어디였더라 여튼 인기 진짜 많은 곳인데 여기 진짜 맛남 꿔바로우가 차원이 다름",
+        "like": 0
       },
       {
+        "exhibitionName": "이경준 사진전: 원 스텝 어웨이",
         "imagePath": "assets/images/work_onestepaway_5.jpg",
         "title": "하이디라오 꺅",
         "author": "보갱이",
         "date": "2025/10/30",
-        "review": "하.... 말모 하이디라오 진짜 맨날 먹고 싶다 이때 보갱이가 맨들어준 소스로 먹었는데 진짜 너무 맛있엇고 탕도 너무 잘 고름.."
+        "review": "하.... 말모 하이디라오 진짜 맨날 먹고 싶다 이때 보갱이가 맨들어준 소스로 먹었는데 진짜 너무 맛있엇고 탕도 너무 잘 고름..",
+        "like": 1
       }
     ]
   }

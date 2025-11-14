@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../models/work.dart';
-import '../../data/work_loader.dart';
+import '../../data/work_loader_id.dart';
 
 class ExhibitionDetail extends StatefulWidget {
   final int index;
@@ -136,6 +136,7 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                 ),
               ),
 
+              const SizedBox(height: 30),
               const Text(
                 "작품명",
                 style: TextStyle(
@@ -150,7 +151,7 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                     fontSize: 24
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -210,7 +211,7 @@ class _ExhibitionDetailState extends State<ExhibitionDetail> {
                       fontSize: 18),
                 ),
               ),
-              const SizedBox(height: 200)
+              const SizedBox(height: 150)
             ],
           );
         },

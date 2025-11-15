@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'photo_detail_screen.dart';
+
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -14,11 +16,11 @@ class HomePage extends StatelessWidget {
         children: [
           _buildRecallSection(),
           const SizedBox(height: 16),
-          _buildPhotoSection('25년 9월'),
+          _buildPhotoSection(context, '25년 9월'),
           const SizedBox(height: 16),
-          _buildPhotoSection('25년 8월'),
+          _buildPhotoSection(context, '25년 8월'),
           const SizedBox(height: 16),
-          _buildPhotoSection('25년 7월'),
+          _buildPhotoSection(context, '25년 7월'),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -41,7 +43,8 @@ class HomePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('회상', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text('회상',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -56,13 +59,15 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoSection(String title) {
+  Widget _buildPhotoSection(BuildContext context, String title) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
             style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black)),
         const SizedBox(height: 8),
         GridView.builder(
           shrinkWrap: true,
@@ -74,12 +79,26 @@ class HomePage extends StatelessWidget {
           ),
           itemCount: 6,
           itemBuilder: (context, index) {
-            return Container(
-              color: Colors.grey[300],
-              child: Center(
-                child: Text(
-                  index == 0 ? '' : '',
-                  style: TextStyle(color: Colors.grey[600]),
+            return GestureDetector(
+              // onTap: () {
+              //   Navigator.push(
+              //       context,
+              //       MaterialPageRoute(builder: (context) =>
+              //           PhotoDetailScreen(
+              //               imagePath: 'assets/sample${index + 1}.jpg',
+              //               date: '2025.09.${index + 1}',
+              //               note: '기록',
+              //           ),
+              //       ),
+              //   );
+              // },
+              child: Container(
+                color: Colors.grey[300],
+                child: Center(
+                  child: Text(
+                    index == 0 ? '' : '',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
                 ),
               ),
             );
@@ -92,6 +111,7 @@ class HomePage extends StatelessWidget {
 
 class _RecallBox extends StatelessWidget {
   final String title;
+
   const _RecallBox({required this.title});
 
   @override
@@ -105,10 +125,14 @@ class _RecallBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
         ),
         child: Center(
-          child: Text(title, style: TextStyle(color: Colors.grey[700], fontSize: 12)),
+          child: Text(
+              title, style: TextStyle(color: Colors.grey[700], fontSize: 12)),
         ),
       ),
     );
   }
 }
+
+
+
 

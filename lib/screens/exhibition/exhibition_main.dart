@@ -127,7 +127,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
           backgroundColor: const Color(0xff0D9F34),
           child: const Icon(Icons.add, color: Colors.white),
           onPressed: () {
-            Get.off(() => const Create1());
+            Get.to(() => const Create1());
           }
         ),
       ),

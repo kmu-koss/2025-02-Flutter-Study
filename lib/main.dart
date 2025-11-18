@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-// DB 관련 패키지
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'dart:async';
 
 void main() {
-  // DB 관련 초기화나 검증 작업은 main 함수에서 수행 가능합니다.
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
-
-// ====================================================================
-// DB 데이터 모델 및 헬퍼 클래스 (main.dart에 통합)
-// ====================================================================
 
 // 1. 데이터 모델 정의
 class TransactionItem {
@@ -33,7 +27,6 @@ class TransactionItem {
     };
   }
 
-  // Map에서 객체로 변환
   factory TransactionItem.fromMap(Map<String, dynamic> map) {
     return TransactionItem(
       id: map['id'] as int?,
@@ -83,13 +76,11 @@ class DatabaseHelper {
     ''');
   }
 
-  // 새 거래 기록 저장
   Future<int> createTransaction(TransactionItem item) async {
     final db = await instance.database;
     return await db.insert('transactions', item.toMap());
   }
 
-  // 특정 날짜의 거래 기록 조회
   Future<List<TransactionItem>> getTransactionsByDate(String date) async {
     final db = await instance.database;
     final maps = await db.query(
@@ -103,10 +94,6 @@ class DatabaseHelper {
   }
 }
 
-// ====================================================================
-// 팝업창 상태 관리 위젯
-// ====================================================================
-
 class DailyTransactionDialog extends StatefulWidget {
   final DateTime selectedDate;
 
@@ -117,15 +104,13 @@ class DailyTransactionDialog extends StatefulWidget {
 }
 
 class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
-  // 입력 필드 항목 리스트
   List<Map<String, dynamic>> _transactionInputs = [];
-  // 저장된 내역을 담을 리스트 (로드된 데이터)
   List<TransactionItem> _loadedTransactions = [];
 
   @override
   void initState() {
     super.initState();
-    _loadTransactions(); // 팝업창이 열릴 때 저장된 데이터를 로드합니다.
+    _loadTransactions();
   }
 
   @override
@@ -136,7 +121,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     super.dispose();
   }
 
-  // DB에서 데이터를 불러오는 함수
   Future<void> _loadTransactions() async {
     final dateString = '${widget.selectedDate.year}-${widget.selectedDate.month}-${widget.selectedDate.day}';
     final transactions = await DatabaseHelper.instance.getTransactionsByDate(dateString);
@@ -146,7 +130,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     });
   }
 
-  // 새로운 항목을 추가하는 함수
   void _addTransactionInput() {
     setState(() {
       _transactionInputs.add({
@@ -156,7 +139,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     });
   }
 
-  // 항목을 제거하는 함수
   void _removeTransactionInput(int index) {
     setState(() {
       _transactionInputs[index]['amountController'].dispose();
@@ -164,7 +146,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     });
   }
 
-  // 카테고리 선택 Dialog
   Future<String?> _selectCategoryDialog(BuildContext context) {
     return showDialog<String>(
       context: context,
@@ -181,7 +162,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     );
   }
 
-  // 회색 표시 도형 빌드 함수
   Widget _buildDisplayBox(String label, String value) {
     return Expanded(
       child: Container(
@@ -201,14 +181,12 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
     );
   }
 
-  // 흰색 입력 필드 빌드 함수 (제거 버튼 포함)
   Widget _buildInputRow(BuildContext context, int index, String currentCategory, TextEditingController controller) {
     return Column(
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. 제거 버튼 (-)
             InkWell(
               onTap: () => _removeTransactionInput(index),
               child: const Padding(
@@ -217,7 +195,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
               ),
             ),
 
-            // 2. 카테고리 선택 (흰색)
             Expanded(
               child: InkWell(
                 onTap: () async {
@@ -241,7 +218,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
             ),
             const SizedBox(width: 8),
 
-            // 3. 금액 입력 (흰색)
             Expanded(
               child: Container(
                 height: 50,
@@ -274,7 +250,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
   Widget build(BuildContext context) {
     String dateString = '${widget.selectedDate.year}년 ${widget.selectedDate.month}월 ${widget.selectedDate.day}일';
 
-    // 총 금액 계산
     final totalAmount = _loadedTransactions.fold(0, (sum, item) => sum + item.amount);
 
     return Dialog(
@@ -288,16 +263,13 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            // 1. 상단 제목 및 버튼 (날짜, 뒤로가기, + 버튼)
             Stack(
               alignment: Alignment.center,
               children: [
-                // 1-1. 날짜 텍스트 (중앙)
                 Text(
                   dateString,
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                // 1-2. 뒤로가기 아이콘 (좌측 상단)
                 Positioned(
                   left: 0,
                   top: 0,
@@ -308,7 +280,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                     child: const Icon(Icons.arrow_back, color: Colors.black54),
                   ),
                 ),
-                // 1-3. (+) 버튼 (우측 상단) - 항목 추가 기능
                 Positioned(
                   right: 0,
                   top: 0,
@@ -326,24 +297,21 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
 
             const Divider(height: 20),
 
-            // 2. 고정된 회색 영역 (표시)
             Row(
               children: [
-                _buildDisplayBox('총 지출/수입', '₩ ${totalAmount.toString()}'), // ✅ 총액 표시
+                _buildDisplayBox('총 지출/수입', '₩ ${totalAmount.toString()}'),
                 const SizedBox(width: 8),
-                _buildDisplayBox('저장된 항목 수', '${_loadedTransactions.length}개'), // ✅ 항목 수 표시
+                _buildDisplayBox('저장된 항목 수', '${_loadedTransactions.length}개'),
               ],
             ),
 
             const SizedBox(height: 15),
 
-            // 3. 리스트에 있는 모든 입력 필드 및 저장된 내역 렌더링
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // 입력 항목 리스트 렌더링
                     ..._transactionInputs.asMap().entries.map((entry) {
                       int index = entry.key;
                       var input = entry.value;
@@ -359,7 +327,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                     const Text('--- 이 날짜의 저장된 내역 ---', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
 
-                    // ✅ 저장된 내역 리스트 표시
                     if (_loadedTransactions.isEmpty)
                       const Center(child: Text('저장된 내역이 없습니다.')),
 
@@ -375,7 +342,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                 ),
               ),
             ),
-            // 하단 저장 버튼 (DB 저장 로직 연결)
             ElevatedButton(
               onPressed: () async {
                 if (_transactionInputs.isEmpty) {
@@ -384,7 +350,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                 }
 
                 int savedCount = 0;
-                // 리스트의 각 항목을 DB에 저장합니다.
                 for (var input in _transactionInputs) {
                   final category = input['category'] as String;
                   final amountText = (input['amountController'] as TextEditingController).text;
@@ -400,11 +365,10 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                     amount: amount,
                   );
 
-                  await DatabaseHelper.instance.createTransaction(newItem); // DB 저장 실행
+                  await DatabaseHelper.instance.createTransaction(newItem);
                   savedCount++;
                 }
 
-                // 저장 후 피드백 및 팝업 닫기
                 if (savedCount > 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('$savedCount개 항목이 저장되었습니다. 팝업을 다시 열어 확인하세요.'))
@@ -424,10 +388,6 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
   }
 }
 
-
-// ====================================================================
-// 캘린더 페이지 위젯
-// ====================================================================
 
 class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
@@ -464,7 +424,6 @@ class _CalendarPageState extends State<CalendarPage> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // 1. TableCalendar 컨테이너 (캘린더)
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFFFF),
@@ -504,12 +463,12 @@ class _CalendarPageState extends State<CalendarPage> {
                     formatButtonVisible: false,
                     titleCentered: true,
                   ),
-                  calendarStyle: CalendarStyle(
+                  calendarStyle: const CalendarStyle(
                     todayDecoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.5),
+                      color: Colors.blue,
                       shape: BoxShape.circle,
                     ),
-                    selectedDecoration: const BoxDecoration(
+                    selectedDecoration: BoxDecoration(
                       color: Color(0xFF0055C5),
                       shape: BoxShape.circle,
                     ),
@@ -519,7 +478,6 @@ class _CalendarPageState extends State<CalendarPage> {
 
               const SizedBox(height: 30),
 
-              // 2. 반응형 도형 (Container)
               Container(
                 width: screenSize.width * 0.8,
                 height: screenSize.height * 0.15,
@@ -555,10 +513,6 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-// ====================================================================
-// 홈 페이지 내용을 별도의 위젯으로 분리
-// ====================================================================
-
 class HomePageContent extends StatelessWidget {
   const HomePageContent({super.key});
 
@@ -577,7 +531,6 @@ class HomePageContent extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            // 1. 첫 번째 Container (파란색 도형)
             Container(
               width: containerWidth,
               height: containerHeight,
@@ -633,7 +586,6 @@ class HomePageContent extends StatelessWidget {
 
             const SizedBox(height: 100),
 
-            // 2. 두 번째 Container (흰색 도형)
             Container(
               width: containerWidth,
               height: containerHeight,
@@ -686,10 +638,6 @@ class HomePageContent extends StatelessWidget {
     );
   }
 }
-
-// ====================================================================
-// 메인 위젯 및 네비게이션
-// ====================================================================
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

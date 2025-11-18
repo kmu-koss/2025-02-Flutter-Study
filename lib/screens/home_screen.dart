@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'photo_detail_screen.dart';
+import 'upload_screen.dart';
 
 
 class HomePage extends StatelessWidget {
@@ -26,6 +27,12 @@ class HomePage extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // 새 기록 추가
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const UploadScreen(),
+            ),
+          );
         },
         child: const Icon(Icons.add),
       ),
@@ -92,6 +99,18 @@ class HomePage extends StatelessWidget {
               //       ),
               //   );
               // },
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PhotoDetailScreen(
+                      imagePath: null,         // 없으면 null 넣어도 됨
+                      date: '2025. 9. 29',
+                      note: '9.29 일기 내용 표시',
+                    ), // ← 여기만 바꾸면 됨
+                  ),
+                );
+              },
               child: Container(
                 color: Colors.grey[300],
                 child: Center(

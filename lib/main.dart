@@ -77,6 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           color: Color(0xff2E2E2E),
                         ),
                       ),
+                      Text(
+                        '객체지향프로그래밍',
+                        style: TextStyle(
+                          color: Color(0xff2E2E2E),
+                        ),
+                      ),
                     ],
                   )
                 ],

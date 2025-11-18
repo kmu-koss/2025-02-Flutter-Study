@@ -75,6 +75,12 @@ class SchedulePage extends StatelessWidget {
             Positioned(
               child: Container(
                 color: Color(0xffB8D8E6),
+                child: Text(
+                  '소프트웨어 프로젝트',
+                  style: TextStyle(
+                    color: Color(0xff2E2E2E)
+                  ),
+                ),
               ),
               top: kFirstColumnHeight + kBoxSize / 2,
               height: kBoxSize + kBoxSize * 0.5,

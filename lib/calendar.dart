@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'plusCalendar.dart';
+import 'Table.dart';
 
 class CalendarPage extends StatelessWidget {
   const  CalendarPage({super.key});
@@ -30,12 +31,7 @@ class CalendarPage extends StatelessWidget {
         ],
       ),
       backgroundColor: Color(0xffFDF7EF),
-      body: const Center(
-        child: Text(
-          '달력',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
+      body: Calendar(),
       bottomNavigationBar: BottomNavigationBar(backgroundColor: Color(0xffB8D8E6),
         selectedItemColor: Color(0xff2C3E50),
         unselectedItemColor: Color(0xff2C3E50),

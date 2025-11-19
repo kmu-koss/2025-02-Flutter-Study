@@ -31,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  bool _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -65,9 +66,25 @@ class _MyHomePageState extends State<MyHomePage> {
                     '일정',
                     style: TextStyle(
                       color: Color(0xff2E2E2E),
+                      fontSize: 20,
                     ),
-
                   ),
+                  Row(
+                    children: [
+                      Text(
+                        '소프트웨어 프로젝트',
+                        style: TextStyle(
+                          color: Color(0xff2E2E2E),
+                        ),
+                      ),
+                      Text(
+                        '객체지향프로그래밍',
+                        style: TextStyle(
+                          color: Color(0xff2E2E2E),
+                        ),
+                      ),
+                    ],
+                  )
                 ],
               )
           ),
@@ -87,8 +104,27 @@ class _MyHomePageState extends State<MyHomePage> {
                     'To do',
                     style: TextStyle(
                       color: Color(0xff2E2E2E),
+                      fontSize: 20,
                     ),
                   ),
+                  Row (
+                    children: [
+                      Checkbox(
+                        value: _isChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isChecked = value!;
+                          });
+                        },
+                      ),
+                      Text(
+                        '소프트웨어 프로젝트 팀플',
+                        style: TextStyle(
+                          color: Color(0xff2E2E2E),
+                      ),
+                      ),
+                    ],
+                  )
                 ],
               )
           ),

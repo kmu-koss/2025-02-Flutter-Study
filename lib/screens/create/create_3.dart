@@ -198,7 +198,13 @@ class _Create3State extends State<Create3> {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Get.to(() => Create4());
+                  Get.to(() => Create4(
+                    titles: titleControllers.map((c) => c.text).toList(),
+                    authors: authorControllers.map((c) => c.text).toList(),
+                    dates: dateControllers.map((c) => c.text).toList(),
+                    reviews: reviewControllers.map((c) => c.text).toList(),
+                    images: widget.images
+                  ));
                 },
                 child: const Text(
                   "다음",

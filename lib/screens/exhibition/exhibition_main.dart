@@ -125,7 +125,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
         child: FloatingActionButton(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
           backgroundColor: const Color(0xff0D9F34),
-          child: const Icon(Icons.add, color: Colors.white),
+          child: const Icon(Icons.add_rounded, size: 45, color: Colors.white),
           onPressed: () {
             Get.to(() => const Create1());
           }

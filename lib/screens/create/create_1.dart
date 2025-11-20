@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../exhibition/exhibition_main.dart';
+import 'create_2.dart';
 
 class Create1 extends StatelessWidget {
   const Create1({super.key});
@@ -67,7 +68,10 @@ class Create1 extends StatelessWidget {
                 child: SizedBox(
                   width: 200,
                   child: TextField(
-                    style: TextStyle(fontSize: 13),
+                    style: TextStyle(
+                        fontFamily: "Pretendard-Light",
+                        fontSize: 13
+                    ),
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: "이경준 사진전 : 원 스텝 어웨이"
@@ -144,7 +148,7 @@ class Create1 extends StatelessWidget {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Get.to(() => const ExhibitionMain());
+                  Get.to(() => const Create2());
                 },
                 child: const Text(
                   "다음",

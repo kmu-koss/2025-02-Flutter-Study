@@ -139,7 +139,7 @@ class Create4 extends StatelessWidget {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Get.off(() => const Create3(images: [],));
+                  Get.to(() => const Create3(images: [],));
                 },
                 child: const Text(
                   "취소",
@@ -163,7 +163,7 @@ class Create4 extends StatelessWidget {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Get.to(() => const ExhibitionMain());
+                  Get.off(() => const ExhibitionMain());
                 },
                 child: const Text(
                   "완료",

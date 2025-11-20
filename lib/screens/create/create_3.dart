@@ -174,7 +174,7 @@ class _Create3State extends State<Create3> {
                   foregroundColor: Colors.black,
                 ),
                 onPressed: () {
-                  Get.off(() => const Create2());
+                  Get.to(() => const Create2());
                 },
                 child: const Text(
                   "취소",

@@ -102,14 +102,14 @@ class _LikeMainState extends State<LikeMain> {
                           ),
                           const SizedBox(height: 120),
                           Text(
-                            '전시회    ${exhb.exhibitionName}',
+                            '전시회      ${exhb.exhibitionName}',
                             style: const TextStyle(
                               fontFamily: 'Pretendard-Light',
                               fontSize: 12,
                             ),
                           ),
                           Text(
-                            '작가               ${exhb.author}',
+                            '작가                   ${exhb.author}',
                             style: const TextStyle(
                               fontFamily: 'Pretendard-Light',
                               fontSize: 12,

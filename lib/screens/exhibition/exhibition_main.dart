@@ -105,7 +105,7 @@ class _ExhibitionMainState extends State<ExhibitionMain> {
                             ),
                           ),
                           Text(
-                            '작품 기록               ${exhb.recordedWork}',
+                            '작품 기록                   ${exhb.recordedWork}',
                             style: const TextStyle(
                               fontFamily: 'Pretendard-Light',
                               fontSize: 12,

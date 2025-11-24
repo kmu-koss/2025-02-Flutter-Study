@@ -98,8 +98,17 @@ class Create1 extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(right: 30),
                 child: ElevatedButton(
-                    onPressed: () => _selectDate(context),
-                    child: const Text("날짜 선택")
+                  onPressed: () => _selectDate(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black
+                  ),
+                  child: const Text(
+                    "날짜 선택",
+                    style: TextStyle(
+                      fontFamily: "Pretendard-Light"
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -1,40 +1,62 @@
 import 'dart:io';
-
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:haruharu/system/detail_action.dart';
+import 'package:haruharu/system/photo_entry.dart';
+
+import 'upload_screen.dart';
+
+const Color primaryColor = Color(0xFFB3E0FF);
+const Color accentColor = Color(0xFF7AD1FF);
+const Color lightBgColor = Color(0xFFF0F8FF);
+const Color darkTextColor = Color(0xFF1A237E);
+const Color inactiveColor = Color(0xFFDEDEDE);
 
 class PhotoDetailScreen extends StatelessWidget {
-  final String? imagePath;
+  final Uint8List? imageBytes;
   final String date;
   final String note;
+  final PhotoEntry originalEntry;
 
 
   const PhotoDetailScreen({
     super.key,
-    this.imagePath,
+    this.imageBytes,
     required this.date,
-    required this.note});
+    required this.note,
+    required this.originalEntry,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      //backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.grey[200],
+        backgroundColor: primaryColor,
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: darkTextColor),
         ),
         actions: [
           // 수정 버튼
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: TextButton(
-              onPressed: () {
-                // TODO: 수정 기능 (나중에)
+              onPressed: () async {
+                final modifiedEntry = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UploadScreen(initialEntry: originalEntry),
+                  ),
+                );
+                if (modifiedEntry != null && modifiedEntry is PhotoEntry) {
+                  Navigator.pop(context, modifiedEntry);
+                }
               },
               style: TextButton.styleFrom(
-                backgroundColor: Colors.grey[400],
+                backgroundColor: accentColor,
                 padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
@@ -49,10 +71,10 @@ class PhotoDetailScreen extends StatelessWidget {
             padding: const EdgeInsets.only(right: 12, left: 4),
             child: TextButton(
               onPressed: () {
-                // TODO: 삭제 기능 (나중에)
+                Navigator.pop(context, DetailAction.delete);
               },
               style: TextButton.styleFrom(
-                backgroundColor: Colors.grey[600],
+                backgroundColor: accentColor,
                 padding:
                 const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
@@ -69,39 +91,40 @@ class PhotoDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── 사진 영역 (정사각형) ──
+            //사진
             AspectRatio(
               aspectRatio: 1,
               child: ClipRect(
-                child: imagePath == null || imagePath!.isEmpty
+                child: imageBytes == null || imageBytes!.isEmpty
                     ? Container(
-                  color: Colors.grey[100],
+                  color: lightBgColor,
                   child: const Center(
                     child: Text(
                       '사진',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: darkTextColor),
                     ),
                   ),
                 )
-                    : Image.file(
-                  File(imagePath!),
+                    : Image.memory(
+                  imageBytes!,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // ── 날짜 + 추가사진 줄 ──
+            //날짜
             Container(
               padding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                border: const Border(
-                  top: BorderSide(color: Colors.grey),
-                  bottom: BorderSide(color: Colors.grey),
-                ),
-              ),
+              color: lightBgColor,
+              // decoration: BoxDecoration(
+              //   color: Colors.grey[100],
+              //   border: const Border(
+              //     top: BorderSide(color: Colors.grey),
+              //     bottom: BorderSide(color: Colors.grey),
+              //   ),
+              // ),
               child: Row(
                 children: [
                   Text(
@@ -128,19 +151,20 @@ class PhotoDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── 일기 내용 라벨 ──
-            const Text(
-              '일기 내용',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
+            // // 일기 내용 라벨
+            // const Text(
+            //   '일기 내용',
+            //   style: TextStyle(color: Colors.grey),
+            // ),
+            // const SizedBox(height: 8),
 
-            // ── 일기 내용 본문 ──
+            // 일기 내용 본문
             Expanded(
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
-                color: Colors.grey[100],
+
+                color: inactiveColor,
                 child: SingleChildScrollView(
                   child: Text(
                     note.isEmpty ? ' ' : note,

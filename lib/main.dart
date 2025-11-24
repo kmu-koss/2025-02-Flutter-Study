@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+        fontFamily: "Hakgyoansim"
       ),
       home: const HomePage(),
     );

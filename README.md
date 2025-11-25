@@ -1,16 +1,16 @@
-# 2025-02-Flutter-Study
-KOSS에서 진행하는 2025학년도 2학기 플러터 심화 스터디 레포입니다.
+# haruharu
 
-### 스터디 소개
-본 스터디는 Figma를 활용한 앱 디자인부터 Flutter 개발 실습을 포함한 Flutter 유경험자를 대상으로 하는 프로그램으로, 앱 디자인과 프론트엔드 개발에 대한 실력 향상을 돕습니다.
+A new Flutter project.
 
-### 주차별 요약
-| 주차 | 진도 |
-|---|---|
-| 1주차 | 프로젝트 아이디어 구상, Figma 기초
-| 2주차 | Figma를 활용한 Wireframe 구성
-| 3주차 | 앱 디자인 구체화
-| 4주차 | Flutter 개발
-| 5주차 | Flutter 개발
-| 6주차 | Flutter 개발
-| 7주차 | 프로젝트 마무리 및 발표
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.

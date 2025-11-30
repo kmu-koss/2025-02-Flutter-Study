@@ -1,98 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
 import 'dart:async';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:fl_chart/fl_chart.dart';
 
-void main() {
+part 'main.g.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+
+  Hive.registerAdapter(TransactionItemAdapter());
+
+  await Hive.openBox<TransactionItem>('transactions');
+
+  await Hive.openBox('settings');
+
   runApp(const MyApp());
 }
 
-// 1. 데이터 모델 정의
-class TransactionItem {
-  final int? id;
+@HiveType(typeId: 0)
+class TransactionItem extends HiveObject {
+  @HiveField(0)
   final String date;
+
+  @HiveField(1)
   final String category;
+
+  @HiveField(2)
   final int amount;
 
-  TransactionItem({this.id, required this.date, required this.category, required this.amount});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'date': date,
-      'category': category,
-      'amount': amount,
-    };
-  }
-
-  factory TransactionItem.fromMap(Map<String, dynamic> map) {
-    return TransactionItem(
-      id: map['id'] as int?,
-      date: map['date'] as String,
-      category: map['category'] as String,
-      amount: map['amount'] as int,
-    );
-  }
+  TransactionItem({required this.date, required this.category, required this.amount});
 }
 
-// 2. 데이터베이스 관리 헬퍼 클래스
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
-  static Database? _database;
+  final Box<TransactionItem> transactionBox = Hive.box<TransactionItem>('transactions');
+  final Box settingsBox = Hive.box('settings');
 
-  DatabaseHelper._init();
-
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('transactions.db');
-    return _database!;
+  Future<void> saveBalance(int amount) async {
+    await settingsBox.put('currentBalance', amount);
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(
-      path,
-      version: 1,
-      onCreate: _createDB,
-    );
+  int getBalance() {
+    return settingsBox.get('currentBalance', defaultValue: 0);
   }
 
-  Future _createDB(Database db, int version) async {
-    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const textType = 'TEXT NOT NULL';
-    const integerType = 'INTEGER NOT NULL';
-
-    await db.execute('''
-      CREATE TABLE transactions (
-        id $idType,
-        date $textType,
-        category $textType,
-        amount $integerType
-      )
-    ''');
+  Future<void> createTransaction(TransactionItem item) async {
+    await transactionBox.add(item);
   }
 
-  Future<int> createTransaction(TransactionItem item) async {
-    final db = await instance.database;
-    return await db.insert('transactions', item.toMap());
+  List<TransactionItem> getTransactionsByDate(String date) {
+    return transactionBox.values.where((item) => item.date == date).toList();
   }
 
-  Future<List<TransactionItem>> getTransactionsByDate(String date) async {
-    final db = await instance.database;
-    final maps = await db.query(
-      'transactions',
-      where: 'date = ?',
-      whereArgs: [date],
-      orderBy: 'id ASC',
-    );
-
-    return maps.map((json) => TransactionItem.fromMap(json)).toList();
+  List<TransactionItem> getAllTransactions() {
+    return transactionBox.values.toList();
   }
 }
+final dbHelper = DatabaseHelper();
+
 
 class DailyTransactionDialog extends StatefulWidget {
   final DateTime selectedDate;
@@ -123,7 +91,8 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
 
   Future<void> _loadTransactions() async {
     final dateString = '${widget.selectedDate.year}-${widget.selectedDate.month}-${widget.selectedDate.day}';
-    final transactions = await DatabaseHelper.instance.getTransactionsByDate(dateString);
+
+    final transactions = dbHelper.getTransactionsByDate(dateString);
 
     setState(() {
       _loadedTransactions = transactions;
@@ -203,6 +172,7 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                     setState(() {
                       _transactionInputs[index]['category'] = newCategory;
                     });
+
                   }
                 },
                 child: Container(
@@ -365,13 +335,13 @@ class _DailyTransactionDialogState extends State<DailyTransactionDialog> {
                     amount: amount,
                   );
 
-                  await DatabaseHelper.instance.createTransaction(newItem);
+                  await dbHelper.createTransaction(newItem);
                   savedCount++;
                 }
 
                 if (savedCount > 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('$savedCount개 항목이 저장되었습니다. 팝업을 다시 열어 확인하세요.'))
+                      SnackBar(content: Text('$savedCount개 항목이 저장되었습니다.'))
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('유효한 입력 항목이 없습니다.')));
@@ -401,11 +371,71 @@ class _CalendarPageState extends State<CalendarPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  void _showDailyPopup(BuildContext context, DateTime selectedDate) {
-    showDialog(
+  Map<DateTime, List<TransactionItem>> _events = {};
+  int _totalExpenditure = 0;
+  Map<String, int> _categoryExpenditures = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = _focusedDay;
+    _loadEvents();
+  }
+
+  Future<void> _loadEvents() async {
+    final transactions = dbHelper.getAllTransactions();
+    final Map<DateTime, List<TransactionItem>> newEvents = {};
+
+    int calculatedTotalExpenditure = 0;
+    Map<String, int> calculatedCategoryExpenditures = {};
+
+    for (var item in transactions) {
+      final dateParts = item.date.split('-');
+      if (dateParts.length < 3) continue;
+
+      final day = DateTime.utc(
+          int.parse(dateParts[0]),
+          int.parse(dateParts[1]),
+          int.parse(dateParts[2])
+      );
+
+      final normalizedDay = DateTime(day.year, day.month, day.day);
+
+      if (newEvents[normalizedDay] == null) {
+        newEvents[normalizedDay] = [];
+      }
+      newEvents[normalizedDay]!.add(item);
+
+      if (item.category != '수입') {
+        calculatedTotalExpenditure += item.amount;
+
+        calculatedCategoryExpenditures.update(
+          item.category,
+              (value) => value + item.amount,
+          ifAbsent: () => item.amount,
+        );
+      }
+    }
+
+    setState(() {
+      _events = newEvents;
+      _totalExpenditure = calculatedTotalExpenditure;
+      _categoryExpenditures = calculatedCategoryExpenditures;
+    });
+  }
+
+  List<TransactionItem> _getEventsForDay(DateTime day) {
+    final normalizedDay = DateTime(day.year, day.month, day.day);
+    return _events[normalizedDay] ?? [];
+  }
+
+  void _showDailyPopup(BuildContext context, DateTime selectedDate) async {
+    await showDialog(
       context: context,
       builder: (context) => DailyTransactionDialog(selectedDate: selectedDate),
     );
+
+    _loadEvents();
   }
 
   @override
@@ -444,7 +474,6 @@ class _CalendarPageState extends State<CalendarPage> {
                       _selectedDay = selectedDay;
                       _focusedDay = focusedDay;
                     });
-
                     _showDailyPopup(context, selectedDay);
                   },
 
@@ -459,6 +488,8 @@ class _CalendarPageState extends State<CalendarPage> {
                     _focusedDay = focusedDay;
                   },
 
+                  eventLoader: _getEventsForDay,
+
                   headerStyle: const HeaderStyle(
                     formatButtonVisible: false,
                     titleCentered: true,
@@ -472,6 +503,12 @@ class _CalendarPageState extends State<CalendarPage> {
                       color: Color(0xFF0055C5),
                       shape: BoxShape.circle,
                     ),
+                    markerDecoration: BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    markerSize: 6.0,
+                    markerSizeScale: 0.2,
                   ),
                 ),
               ),
@@ -498,10 +535,32 @@ class _CalendarPageState extends State<CalendarPage> {
                     ),
                   ],
                 ),
-                child: const Center(
-                  child: Text(
-                    '여기에 반응형 도형이 들어갑니다',
-                    style: TextStyle(color: Colors.black87),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        '총 지출 금액 (누적)',
+                        style: TextStyle(color: Colors.black54, fontSize: 14),
+                      ),
+                      Text(
+                        '₩ ${_totalExpenditure.toString()}',
+                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 24),
+                      ),
+                      const SizedBox(height: 8),
+
+                      ..._categoryExpenditures.entries.map((entry) {
+                        return Text(
+                          '${entry.key}: ₩ ${entry.value.toString()}',
+                          style: const TextStyle(color: Colors.black87, fontSize: 16),
+                        );
+                      }).toList(),
+
+                      if (_categoryExpenditures.isEmpty && _totalExpenditure == 0)
+                        const Text('저장된 지출 내역이 없습니다.', style: TextStyle(color: Colors.grey)),
+                    ],
                   ),
                 ),
               ),
@@ -513,13 +572,121 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-class HomePageContent extends StatelessWidget {
+class HomePageContent extends StatefulWidget {
   const HomePageContent({super.key});
+
+  @override
+  State<HomePageContent> createState() => _HomePageContentState();
+}
+
+class _HomePageContentState extends State<HomePageContent> {
+  int _currentBalance = 0;
+  int _currentMonthTotalExpenditure = 0;
+  Map<String, int> _currentMonthCategoryExpenditures = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  void _loadData() {
+    _loadBalance();
+    _loadCurrentMonthExpenditure();
+  }
+
+  void _loadBalance() {
+    setState(() {
+      _currentBalance = dbHelper.getBalance();
+    });
+  }
+
+  void _loadCurrentMonthExpenditure() {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+
+    final allTransactions = dbHelper.getAllTransactions();
+    int totalExpenditure = 0;
+    Map<String, int> categoryMap = {};
+
+    for (var item in allTransactions) {
+      if (item.category == '수입') continue;
+
+      final dateParts = item.date.split('-');
+      if (dateParts.length < 3) continue;
+
+      final itemYear = int.tryParse(dateParts[0]) ?? 0;
+      final itemMonth = int.tryParse(dateParts[1]) ?? 0;
+
+      if (itemYear == currentYear && itemMonth == currentMonth) {
+        totalExpenditure += item.amount;
+
+        categoryMap.update(
+          item.category,
+              (value) => value + item.amount,
+          ifAbsent: () => item.amount,
+        );
+      }
+    }
+
+    final sortedCategories = Map.fromEntries(
+      categoryMap.entries.toList()
+        ..sort((a, b) => b.value.compareTo(a.value)),
+    );
+
+    setState(() {
+      _currentMonthTotalExpenditure = totalExpenditure;
+      _currentMonthCategoryExpenditures = sortedCategories;
+    });
+  }
+
+  void _showBalanceEditDialog() {
+    final controller = TextEditingController(text: _currentBalance.toString());
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('잔고 입력/수정'),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: '새 잔고 (원)',
+              prefixText: '₩ ',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final newAmount = int.tryParse(controller.text) ?? _currentBalance;
+
+                await dbHelper.saveBalance(newAmount);
+
+                _loadBalance();
+
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('잔고가 ₩ $newAmount 원으로 저장되었습니다.'))
+                );
+              },
+              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-
+    final currentMonth = DateTime.now().month;
     final double containerWidth = screenSize.width * 0.9;
     final double containerHeight = screenSize.height * 0.15;
 
@@ -550,22 +717,35 @@ class HomePageContent extends StatelessWidget {
                   )
                 ],
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Text(
-                      '[기태 은행] 잔고',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          '[기태 은행] 잔고',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        InkWell(
+                          onTap: _showBalanceEditDialog,
+                          child: const Icon(
+                            Icons.edit,
+                            color: Colors.white70,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 8),
-                    Text(
+                    const SizedBox(height: 8),
+                    const Text(
                       '110-XXX-XX34XX',
                       style: TextStyle(
                         color: Colors.white,
@@ -573,8 +753,8 @@ class HomePageContent extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '273,143원',
-                      style: TextStyle(
+                      '${_currentBalance.toString()}원',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                       ),
@@ -605,26 +785,27 @@ class HomePageContent extends StatelessWidget {
                   )
                 ],
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
-                      'X월 지출',
-                      style: TextStyle(
+                      '$currentMonth월 지출',
+                      style: const TextStyle(
                         color: Colors.black,
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
-                      '130,000원',
-                      style: TextStyle(
-                        color: Colors.black,
+                      '${_currentMonthTotalExpenditure.toString()}원',
+                      style: const TextStyle(
+                        color: Colors.red,
                         fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
@@ -632,8 +813,669 @@ class HomePageContent extends StatelessWidget {
                 ),
               ),
             ),
+
+            const SizedBox(height: 30),
+
+            Container(
+              width: containerWidth,
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 5,
+                  )
+                ],
+              ),
+              child: MonthlyCategoryPieChart(
+                totalExpenditure: _currentMonthTotalExpenditure,
+                categoryMap: _currentMonthCategoryExpenditures,
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class MonthlyCategoryPieChart extends StatelessWidget {
+  final int totalExpenditure;
+  final Map<String, int> categoryMap;
+
+  const MonthlyCategoryPieChart({
+    super.key,
+    required this.totalExpenditure,
+    required this.categoryMap,
+  });
+
+  static const List<Color> colorList = [
+    Color(0xFF0055C5),
+    Color(0xFF4CAF50),
+    Color(0xFFFF9800),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF00BCD4),
+    Color(0xFFFFEB3B),
+  ];
+
+  List<PieChartSectionData> getSections(int total, Map<String, int> categoryMap) {
+    if (total == 0) return [];
+
+    int index = 0;
+    return categoryMap.entries.map((entry) {
+      final percentage = (entry.value / total * 100).toStringAsFixed(1);
+
+      final section = PieChartSectionData(
+        color: colorList[index % colorList.length],
+        value: entry.value.toDouble(),
+        title: '$percentage%',
+        radius: 70.0,
+        titleStyle: const TextStyle(
+          fontSize: 14.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      );
+      index++;
+      return section;
+    }).toList();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (totalExpenditure == 0) {
+      return const Center(child: Text("이번 달 지출 내역이 없습니다.", style: TextStyle(color: Colors.grey)));
+    }
+
+    final pieChartLegend = categoryMap.entries.map((entry) {
+      final category = entry.key;
+      final amount = entry.value;
+      final percentage = (amount / totalExpenditure * 100).toStringAsFixed(1);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: colorList[categoryMap.keys.toList().indexOf(category) % colorList.length],
+                    shape: BoxShape.circle,
+                  ),
+                  margin: const EdgeInsets.only(right: 8),
+                ),
+                Text('$category (${percentage}%)', style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+            Text('₩ ${amount.toString()}원', style: const TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+      );
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '카테고리별 지출 현황 (이번 달)',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0055C5)),
+        ),
+        const Divider(),
+
+        SizedBox(
+          height: 220,
+          child: PieChart(
+            PieChartData(
+              sections: getSections(totalExpenditure, categoryMap),
+              borderData: FlBorderData(show: false),
+              sectionsSpace: 2,
+              centerSpaceRadius: 40,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        ...pieChartLegend,
+      ],
+    );
+  }
+}
+
+class MonthlyExpenseChart extends StatefulWidget {
+  const MonthlyExpenseChart({super.key});
+
+  @override
+  State<MonthlyExpenseChart> createState() => _MonthlyExpenseChartState();
+}
+
+class _MonthlyExpenseChartState extends State<MonthlyExpenseChart> {
+  List<double> _monthlyExpenses = List.filled(6, 0.0);
+  List<String> _monthLabels = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMonthlyData();
+  }
+
+  Future<void> _loadMonthlyData() async {
+    final transactions = dbHelper.getAllTransactions();
+    Map<String, int> monthlyTotalMap = {};
+
+    final now = DateTime.now();
+
+    for (int i = 0; i < transactions.length; i++) {
+      final item = transactions[i];
+      if (item.category == '수입') continue;
+
+      final date = item.date.substring(0, 7);
+
+      monthlyTotalMap.update(
+        date,
+            (value) => value + item.amount,
+        ifAbsent: () => item.amount,
+      );
+    }
+
+    List<double> expenses = [];
+    List<String> labels = [];
+
+    for (int i = 5; i >= 0; i--) {
+      final monthAgo = DateTime(now.year, now.month - i, 1);
+      final monthKey = '${monthAgo.year}-${monthAgo.month.toString().padLeft(2, '0')}';
+      final shortLabel = '${monthAgo.month}월';
+
+      final amount = (monthlyTotalMap[monthKey] ?? 0).toDouble();
+
+      expenses.add(amount);
+      labels.add(shortLabel);
+    }
+
+    if (expenses.isEmpty) {
+      expenses = List.filled(6, 0.0);
+    }
+
+    setState(() {
+      _monthlyExpenses = expenses;
+      _monthLabels = labels;
+      _isLoading = false;
+    });
+  }
+
+  List<BarChartGroupData> getBarGroups() {
+    const barWidth = 25.0;
+
+    return _monthlyExpenses.asMap().entries.map((entry) {
+      final x = entry.key;
+      final y = entry.value;
+
+      return BarChartGroupData(
+        x: x,
+        barRods: [
+          BarChartRodData(
+            toY: y,
+            color: const Color(0xFF0055C5),
+            width: barWidth,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+            ),
+          ),
+        ],
+        showingTooltipIndicators: y > 0 ? [0] : [],
+      );
+    }).toList();
+  }
+
+  Widget getTitles(double value, TitleMeta meta) {
+    if (value == meta.max) return const SizedBox();
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text('₩ ${value.toInt() ~/ 1000}k', style: const TextStyle(fontSize: 10)),
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final maxExpense = _monthlyExpenses.reduce((a, b) => a > b ? a : b);
+    final finalMaxY = (maxExpense <= 0 ? 10000.0 : maxExpense * 1.2);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 5)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '월별 지출 추이 (최근 6개월)',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0055C5)),
+          ),
+          const Divider(),
+          SizedBox(
+            height: 250,
+            child: BarChart(
+              BarChartData(
+                maxY: finalMaxY,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipBgColor: Colors.blueGrey,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '₩ ${rod.toY.toInt().toString()}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 35,
+                      getTitlesWidget: getTitles,
+                      interval: finalMaxY / 5,
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        return SideTitleWidget(
+                          axisSide: meta.axisSide,
+                          space: 4,
+                          child: Text(_monthLabels[value.toInt()], style: const TextStyle(fontSize: 12)),
+                        );
+                      },
+                      reservedSize: 30,
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(
+                  show: true,
+                  border: const Border(
+                    bottom: BorderSide(color: Colors.black, width: 1),
+                    left: BorderSide(color: Colors.transparent),
+                    right: BorderSide(color: Colors.transparent),
+                    top: BorderSide(color: Colors.transparent),
+                  ),
+                ),
+                gridData: const FlGridData(
+                  show: false,
+                ),
+                barGroups: getBarGroups(),
+                alignment: BarChartAlignment.spaceAround,
+                groupsSpace: 10,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+enum Period { oneMonth, threeMonths, sixMonths, all }
+
+class CategoryBarChart extends StatelessWidget {
+  final Map<String, int> categoryMap;
+  final int totalExpenditure;
+
+  const CategoryBarChart({
+    super.key,
+    required this.categoryMap,
+    required this.totalExpenditure,
+  });
+
+  static const List<Color> colorList = [
+    Color(0xFF0055C5),
+    Color(0xFF4CAF50),
+    Color(0xFFFF9800),
+    Color(0xFFE91E63),
+    Color(0xFF9C27B0),
+    Color(0xFF00BCD4),
+    Color(0xFFFFEB3B),
+  ];
+
+  List<BarChartGroupData> getBarGroups(Map<String, int> map) {
+    final sortedEntries = map.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    int index = 0;
+
+    return sortedEntries.map((entry) {
+      final amount = entry.value.toDouble();
+      final currentIndex = index;
+      index++;
+
+      return BarChartGroupData(
+        x: currentIndex,
+        barRods: [
+          BarChartRodData(
+            toY: amount,
+            color: colorList[currentIndex % colorList.length],
+            width: 25,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+            ),
+          ),
+        ],
+        showingTooltipIndicators: [0],
+      );
+    }).toList();
+  }
+
+  Widget _getCategoryTitles(double value, TitleMeta meta) {
+    if (value.toInt() != value) return const SizedBox();
+
+    final sortedEntries = categoryMap.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final actualIndex = value.toInt();
+
+    if (actualIndex >= 0 && actualIndex < sortedEntries.length) {
+      return SideTitleWidget(
+        axisSide: meta.axisSide,
+        space: 4,
+        child: Text(
+          sortedEntries[actualIndex].key,
+          style: const TextStyle(fontSize: 10),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+    return const SizedBox();
+  }
+
+  Widget _getAmountTitles(double value, TitleMeta meta) {
+    if (value == 0 || value == meta.max) return const SizedBox();
+
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text('₩ ${value.toInt() ~/ 1000}k', style: const TextStyle(fontSize: 10)),
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    if (categoryMap.isEmpty || totalExpenditure == 0) {
+      return const Center(child: Text("지정된 기간 동안 지출 내역이 없습니다.", style: TextStyle(color: Colors.grey)));
+    }
+
+    final maxAmount = categoryMap.values.reduce((a, b) => a > b ? a : b).toDouble();
+    final finalMaxY = (maxAmount <= 0 ? 10000.0 : maxAmount * 1.2);
+    final double interval = (finalMaxY / 5).ceilToDouble().clamp(1000, double.infinity);
+
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 5)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '카테고리별 지출 순위',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFE91E63)),
+          ),
+          const Divider(),
+          SizedBox(
+            height: 250,
+            child: BarChart(
+              BarChartData(
+
+                maxY: finalMaxY,
+                minY: 0,
+
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    tooltipBgColor: Colors.redAccent,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final category = categoryMap.entries.toList()
+                        ..sort((a, b) => b.value.compareTo(a.value));
+
+                      final actualIndex = group.x;
+
+                      return BarTooltipItem(
+                        '${category[actualIndex].key}\n₩ ${rod.toY.toInt().toString()}',
+                        const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                titlesData: FlTitlesData(
+                  show: true,
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      getTitlesWidget: _getAmountTitles,
+                      interval: interval,
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      getTitlesWidget: _getCategoryTitles,
+                      interval: 1,
+                    ),
+                  ),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+
+                borderData: FlBorderData(
+                  show: true,
+                  border: const Border(
+                    bottom: BorderSide(color: Colors.black, width: 1),
+                    left: BorderSide(color: Colors.black, width: 1),
+                    right: BorderSide(color: Colors.transparent),
+                    top: BorderSide(color: Colors.transparent),
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  drawHorizontalLine: true,
+                  horizontalInterval: interval,
+                ),
+
+                barGroups: getBarGroups(categoryMap),
+
+                alignment: BarChartAlignment.spaceAround,
+                groupsSpace: 10,
+
+              ),
+              swapAnimationDuration: const Duration(milliseconds: 150),
+              swapAnimationCurve: Curves.linear,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ChartPageContent extends StatefulWidget {
+  const ChartPageContent({super.key});
+
+  @override
+  State<ChartPageContent> createState() => _ChartPageContentState();
+}
+
+class _ChartPageContentState extends State<ChartPageContent> {
+  Period _selectedPeriod = Period.oneMonth;
+  bool _isLoading = true;
+  Map<String, int> _categoryExpenditures = {};
+  int _totalExpenditure = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategoryExpendituresByPeriod(_selectedPeriod);
+  }
+
+  DateTime _getStartDate(Period period) {
+    final now = DateTime.now();
+    switch (period) {
+      case Period.oneMonth:
+        return DateTime(now.year, now.month, 1);
+      case Period.threeMonths:
+        return DateTime(now.year, now.month - 2, 1);
+      case Period.sixMonths:
+        return DateTime(now.year, now.month - 5, 1);
+      case Period.all:
+      default:
+        return DateTime(2000, 1, 1);
+    }
+  }
+
+  Future<void> _loadCategoryExpendituresByPeriod(Period period) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final startDate = _getStartDate(period);
+      final allTransactions = dbHelper.getAllTransactions();
+      Map<String, int> categoryMap = {};
+      int total = 0;
+
+      for (var item in allTransactions) {
+        if (item.category == '수입') continue;
+
+        final dateParts = item.date.split('-');
+        if (dateParts.length < 3) continue;
+
+        final itemDate = DateTime(
+          int.tryParse(dateParts[0]) ?? 0,
+          int.tryParse(dateParts[1]) ?? 0,
+          int.tryParse(dateParts[2]) ?? 0,
+        );
+
+        if (itemDate.isAfter(startDate.subtract(const Duration(days: 1))) && itemDate.isBefore(DateTime.now().add(const Duration(days: 1)))) {
+          total += item.amount;
+          categoryMap.update(
+            item.category,
+                (value) => value + item.amount,
+            ifAbsent: () => item.amount,
+          );
+        }
+      }
+
+      final sortedCategories = Map.fromEntries(
+        categoryMap.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value)),
+      );
+
+      setState(() {
+        _categoryExpenditures = sortedCategories;
+        _totalExpenditure = total;
+        _isLoading = false;
+      });
+
+    } catch (e) {
+      print('Error loading chart data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const MonthlyExpenseChart(),
+
+          const SizedBox(height: 30),
+
+          Container(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: Period.values.map((period) {
+                String label;
+                switch (period) {
+                  case Period.oneMonth:
+                    label = '1개월';
+                    break;
+                  case Period.threeMonths:
+                    label = '3개월';
+                    break;
+                  case Period.sixMonths:
+                    label = '6개월';
+                    break;
+                  case Period.all:
+                    label = '전체';
+                    break;
+                }
+                return ChoiceChip(
+                  label: Text(label),
+                  selected: _selectedPeriod == period,
+                  selectedColor: const Color(0xFFE91E63).withOpacity(0.8),
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedPeriod = period;
+                        _loadCategoryExpendituresByPeriod(period);
+                      });
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : CategoryBarChart(
+            categoryMap: _categoryExpenditures,
+            totalExpenditure: _totalExpenditure,
+          ),
+        ],
       ),
     );
   }
@@ -668,8 +1510,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   static const List<Widget> _widgetOptions = <Widget>[
     const CalendarPage(),
-    const HomePageContent(),
-    const Center(child: Text('📈 Chart Page', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
+    HomePageContent(),
+    ChartPageContent(),
   ];
 
   void _onItemTapped(int index) {
